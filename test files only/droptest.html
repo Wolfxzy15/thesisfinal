@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expandable Table with Smooth Animation</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Ensures smooth transition for height changes */
+        .collapse {
+            transition: height 0.35s ease, opacity 0.35s ease;
+            overflow: hidden;
+        }
+        
+        .collapse.show {
+            opacity: 1;
+        }
+        
+        .collapse:not(.show) {
+            opacity: 0;
+        }
+        
+        .collapse:not(.show) {
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Height</th>
+                <th>Weight</th>
+                <th>Contact Number</th>
+                <th>Birthday</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="clickable-row" data-toggle="collapse" data-target="#details1">
+                <td>Juan Carlos de la Cruz</td>
+                <td>175 cm</td>
+                <td>70 kg</td>
+                <td>+63 912 345 6789</td>
+                <td>July 15, 1990</td>
+            </tr>
+            <tr id="details1" class="collapse">
+                <td colspan="5">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Additional Information:</strong>
+                            <ul>
+                                <li><strong>Email:</strong> juancarlos@example.com</li>
+                                <li><strong>Address:</strong> 123 Main St, Quezon City, Philippines</li>
+                                <li><strong>Occupation:</strong> Software Engineer</li>
+                                <li><strong>Emergency Contact:</strong> Maria de la Cruz (+63 912 345 6788)</li>
+                                <li><strong>Nationality:</strong> Filipino</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Notes:</strong>
+                            <p>Juan Carlos is an avid traveler and enjoys hiking during weekends. He is also involved in community service and volunteers at local tech workshops.</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <!-- Repeat similar blocks for more rows -->
+        </tbody>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Optional: add script to highlight row on click

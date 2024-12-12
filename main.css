@@ -1,0 +1,197 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Changed from row to column to stack the content vertically */
+    background-color: #7C93C3;
+    box-sizing: border-box; /* Prevents padding/margin from affecting the overall layout */
+}
+
+header {
+    background-color: #1E2A5E;
+    color: white;
+    padding: 10px 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    margin-left: 25px;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #55679C;
+    color: white;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 50px;
+    transition: transform 0.3s ease-in-out;
+    z-index: 500;
+}
+
+.sidebar nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    padding: 10px 20px;
+}
+
+.sidebar nav ul li a {
+    color: azure;
+    text-decoration: none;
+    display: block;
+}
+
+.sidebar nav ul li a:hover {
+    background: rgb(240, 240, 244);
+    background: linear-gradient(90deg, rgba(240, 240, 244, 0.415) 100%, rgba(0, 212, 255, 1) 100%);
+    border-radius: 11px;
+}
+
+main {
+    margin-left: 250px;
+    padding: 80px 20px 20px;
+    flex-grow: 1;
+    box-sizing: border-box; /* Ensure padding doesn’t break layout */
+}
+
+@media (max-width: 1050px) {
+    .sidebar {
+        transform: translateX(-250px);
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    main {
+        margin-left: 0;
+        padding-top: 80px;
+    }
+
+    #map {
+        height: 250px;
+        width: 100vw;
+    }
+
+    .sidebar.active~#map .leaflet-control {
+        display: none;
+    }
+}
+
+#map {
+    height: 550px;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box; /* Prevents overflow issues */
+}
+
+.table-container {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 780px;
+}
+
+th,
+td {
+    white-space: wrap;
+}
+
+table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #1E2A5E;
+    color: aliceblue;
+    z-index: 2;
+}
+
+.button {
+    width: 100%;
+    max-width: 100%; /* Ensure buttons don’t overflow */
+}
+
+.container, .container1, .container2 {
+    background-color: aliceblue;
+    padding: 10px;
+    border-radius: 11px;
+    width: 100%;
+    box-sizing: border-box; /* Prevents overflow from padding */
+}
+
+input:not([type="radio"]):valid, select:valid {
+    font-weight: bold;
+}
+
+input:not([type="radio"])::placeholder {
+    font-weight: normal;
+}
+
+textarea:valid {
+    font-weight: bold;
+}
+
+input[type="radio"]:checked + label {
+    font-weight: bold;
+}
+
+.status-evacuated {
+    color: white;
+    background-color: green;
+    font-weight: bold;
+}
+
+.status-not-evacuated {
+    color: white;
+    background-color: red;
+    font-weight: bold;
+}
+
+.status-needs-assistance {
+    color: white;
+    background-color: orange;
+    font-weight: bold;
+}
+
+.container-4 {
+    display: flex;
+    flex-direction: row;
+}
+
+.no-box-label {
+    background: none !important;
+    border: none !important;
+    color: black !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-align: center;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
