@@ -1,38 +1,36 @@
 <?php
 session_start();
-$barangay = $_SESSION['username'];
-
 
 include 'db.php';
 $message = '';
 
-
+// Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $presentAddress = $conn->real_escape_string($_POST['presentAddress']);
     $latitude = $conn->real_escape_string($_POST['latitude']);
     $longitude = $conn->real_escape_string($_POST['longitude']);
-    $barangay = $_SESSION['username'];
-
+    $barangay = $conn->real_escape_string($_POST['barangay']); // Get barangay value from input
 
     $num_members = count($_POST['lastName']);
     $num_pwd = 0;
 
-
+    // Loop through the family members and check if any member is a PWD
     for ($i = 0; $i < count($_POST['lastName']); $i++) {
         if ($_POST['pwd' . ($i + 1)] == 'YES') {
             $num_pwd++;
         }
     }
 
-
-    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus, barangay) VALUES ('$presentAddress', '$latitude', '$longitude','$num_members', '$num_pwd', 0, 'Not Evacuated', '$barangay')";
+    // Insert family information
+    $sql_family = "INSERT INTO tbl_families (presentAddress, latitude, longitude, num_members, num_pwd, evacID, evacStatus, barangay_id) 
+                    VALUES ('$presentAddress', '$latitude', '$longitude', '$num_members', '$num_pwd', 0, 'Not Evacuated', '$barangay')";
     if ($conn->query($sql_family) === TRUE) {
         $family_id = $conn->insert_id;
     } else {
         die("Error: " . $sql_family . "<br>" . $conn->error);
     }
 
-
+    // Insert resident information
     $lastNames = $_POST['lastName'];
     $firstNames = $_POST['fName'];
     $middleNames = $_POST['mName'];
@@ -66,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
         $pwd = $_POST["pwd" . ($i + 1)];
         $occupation = $occupations[$i];
 
+        // Check for empty fields
         if (
             empty($kin) || empty($lname) || empty($fname) || empty($mname) || empty($civil) ||
             empty($dob) || empty($pob) || empty($h) || empty($w) || empty($contact) || empty($rel) ||
@@ -74,9 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
             $message = 'incomplete';
             break;
         } else {
+            // Insert each resident's information
             $sql_resident = "INSERT INTO tbl_residents 
             (family_id, lastName, firstName, middleName, age, kinship, sex, civilStatus, 
-            dateOfBirth, placeOfBirth, height, weight, contactNo, religion, email, PWD, occupation, barangay) 
+            dateOfBirth, placeOfBirth, height, weight, contactNo, religion, email, PWD, occupation, barangay_id) 
             VALUES ('$family_id', '$lname', '$fname', '$mname', '$age', '$kin', '$sex', '$civil', 
             '$dob', '$pob', '$h', '$w', '$contact', '$rel', '$email', '$pwd', '$occupation', '$barangay')";
 
@@ -91,11 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     if ($message !== 'incomplete') {
         $message = 'success';
     }
-
-
 }
-
-
 
 $conn->close();
 ?>
@@ -202,10 +198,6 @@ $conn->close();
                             <option value="Dependent">Dependent</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label for="barangay${formCount}">Barangay:</label>
-                        <input type="text" class="form-control" id="barangay${formCount}" value="<?php echo $barangay?>" name="barangay[]" readonly>
-                    </div>
                 </div>
                 <div class="row row-cols-2 mb-3">
                     <div class="col-md-2 mb-2">
@@ -227,6 +219,7 @@ $conn->close();
                             <option value="Divorced">Divorced</option>
                         </select>
                     </div>
+                    
                     <div class="col-md-2">
                         <label for="dateOfBirth${formCount}">Date of Birth:</label>
                         <input type="date" class="form-control" id="dateOfBirth${formCount}" onchange="calculateAge(${formCount})" name="dateOfBirth[]">
@@ -345,6 +338,8 @@ $conn->close();
                 <button type="submit" class="btn btn-success" form="familyForm" name="submit">Submit All</button><br><br>
                 <label for="presentAddress"><b>Present Address:</b></label><br>
                 <input type="text" class="form-control" placeholder="Choose from the map" id="presentAddress" name="presentAddress" required readonly>
+                <label for="presentAddress"><b>Barangay:</b></label><br>
+                <input type="text" class="form-control" placeholder="Barangay" id="barangay" name="barangay" required readonly>
                 <div id="map"></div>
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude"><br>
@@ -379,5 +374,6 @@ $conn->close();
     <?php endif; ?>
 </script>
 <script src="script.js"></script>
+
 
 </html>

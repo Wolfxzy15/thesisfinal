@@ -49,18 +49,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
 }
 
 // Handle delete evacuation center request
+// Handle delete evacuation center request
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     $evacID = $_POST['evacID'];
-    $deleteSql = "DELETE FROM tbl_evac_centers WHERE evacID = ?";
-    if ($stmt = mysqli_prepare($conn, $deleteSql)) {
-        mysqli_stmt_bind_param($stmt, 'i', $evacID);
-        if (mysqli_stmt_execute($stmt)) {
-            echo "<script>alert('Evacuation Center Deleted Successfully');</script>";
+
+    // First, update all families with the given evacID to set evacID to 0
+    $updateFamiliesSql = "UPDATE tbl_families SET evacID = 0 WHERE evacID = $evacID";
+    if (mysqli_query($conn, $updateFamiliesSql)) {
+        // After updating families, delete the evacuation center
+        $deleteSql = "DELETE FROM tbl_evac_centers WHERE evacID = $evacID";
+        if (mysqli_query($conn, $deleteSql)) {
+            echo "<script>alert('Evacuation Center and related family assignments deleted successfully');</script>";
         } else {
             echo "<script>alert('Error deleting Evacuation Center');</script>";
         }
+    } else {
+        echo "<script>alert('Error updating families');</script>";
     }
 }
+
 ?>
 
 
@@ -84,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 
 <main>
     <div class="container1">
-        <h2>Evacuation Centers in Brgy. <?php echo $_SESSION['username']?>, Jaro, Iloilo City</h2>
+        <h2>Evacuation Centers in Iloilo City</h2>
         <div id='map' style="height: 600px;"></div>
     </div>
 
@@ -183,118 +190,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
             </div>
         </div>
     </div>
-
-    <script>
-        // Initialize Leaflet map
-        // var map = L.map('map').setView([], 13); // Default to Brgy. Tabuc Suba
-
-    //     // Add OpenStreetMap tile layer
-    //     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    //     }).addTo(map);
-
-    //     var tabucSubaBoundary = [
-    //     [10.743164, 122.553640], [10.739382, 122.559256],[10.738431, 122.558515],[10.737611, 122.559689],[10.737120, 122.559314],
-    //     [10.735866, 122.561052],[10.732595, 122.559950],[10.732244, 122.560343], [10.731820, 122.560315],[10.728212, 122.564755],
-    //     [10.724658, 122.562600], [10.724254, 122.561318],[10.725630, 122.559709],[10.729595, 122.558438],[10.731196, 122.557518], 
-    //     [10.731354, 122.556414],[10.732155, 122.553148],[10.732805, 122.551697],
-    //     [10.743150, 122.553617] 
-    // ];
-
-// Initialize Leaflet map with default center coordinates
+<script src="geojson.js"></script>
+<script>
 var map = L.map('map').setView([<?= $defaultLat ?>, <?= $defaultLong ?>], 13);
 
-// Add OpenStreetMap tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
-
-
-    fetch('geojson/tabucsuba.geojson')
-    .then(response => response.json())
-    .then(geojsonData => {
-        L.geoJSON(geojsonData, {
-            style: function (feature) {
-                return { color: "#ff0000", weight: 2 };
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup(feature.properties.name);
-                }
-            }
-        }).addTo(map);
-    })
-
-    fetch('geojson/cubay.geojson')
-    .then(response => response.json())
-    .then(geojsonData => {
-        L.geoJSON(geojsonData, {
-            style: function (feature) {
-                return { color: "#ff0000", weight: 2 };
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup(feature.properties.name);
-                }
-            }
-        }).addTo(map);
-    })
-
-    fetch('geojson/sanisidro.geojson')
-    .then(response => response.json())
-    .then(geojsonData => {
-        L.geoJSON(geojsonData, {
-            style: function (feature) {
-                return { color: "#ff0000", weight: 2 };
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup(feature.properties.name);
-                }
-            }
-        }).addTo(map);
-    })
-
-
-
-
-var sanIsidroBoundary = [
-    [10.743134, 122.553613],[10.747129, 122.544828],[10.746827, 122.544916],[10.746575, 122.544881],[10.746411, 122.544781],
-    [10.746267, 122.544720], [10.745939, 122.544459],[10.745661, 122.544015],[10.745529, 122.543830],[10.745003, 122.543386],
-    [10.744801, 122.543143],[10.744640, 122.543002],[10.743781, 122.542519],[10.742031, 122.541926],[10.741630, 122.541872],
-    [10.741354, 122.541916],[10.741158, 122.542053],[10.740701, 122.542223],[10.740578, 122.542416],[10.740549, 122.542814],
-    [10.740664, 122.543767],[10.740606, 122.544104],[10.740624, 122.544352],[10.740494, 122.544739],[10.740290, 122.545248],
-    [10.739925, 122.545701],[10.739885, 122.545613],[10.740288, 122.545050],[10.740506, 122.544554],[10.740303, 122.544960],
-    [10.740096, 122.545273],[10.739868, 122.545480],[10.739618, 122.545616],[10.738867, 122.545753],[10.737806, 122.545870],
-    [10.737603, 122.545945],[10.736627, 122.546545],[10.736451, 122.546694],[10.736346, 122.546815],[10.735666, 122.546363],
-    [10.735950, 122.546055],[10.735517, 122.545680],[10.735335, 122.545889],[10.734779, 122.545405],[10.734962, 122.545211],
-    [10.734602, 122.544899],[10.734520, 122.544987],[10.733106, 122.543822],[10.732993, 122.544049],[10.732823, 122.544119],
-    [10.732725, 122.544123],[10.732493, 122.544013],[10.732374, 122.544038],[10.732314, 122.544235],[10.732300, 122.544438],
-    [10.732159, 122.544719],[10.731872, 122.545037],[10.731645, 122.545329],[10.731576, 122.545451],[10.731496, 122.545698],
-    [10.731410, 122.546335],[10.730700, 122.547108],[10.730600, 122.547137],[10.730440, 122.547127],[10.730102, 122.547046],
-    [10.729816, 122.547120],[10.730305, 122.547644],[10.729700, 122.548353],[10.733105, 122.551156],[10.732804, 122.551688],
-    [10.743167, 122.553604]
-    
-];
-
-    var tabucSubaPolygon = L.polygon(tabucSubaBoundary, {
-        color: "#3388ff",
-        weight: 3,
-        fill: true,
-    }).addTo(map).bindTooltip("TABUC SUBA", { permanent: true, direction: "center",className: "no-box-label" });
-
-    var cubayPolygon = L.polygon(CubayBoundary, {
-    color: "#008000",
-    weight: 3,
-    fill: true,
-    }).addTo(map).bindTooltip("CUBAY", { permanent: true, direction: "center", className: "no-box-label" });
-
-    var sanIsidroPolygon = L.polygon(sanIsidroBoundary, {
-        color: "#FFA500",
-        weight: 3,
-        fill: true,
-    }).addTo(map).bindTooltip("SAN ISIDRO", { permanent: true, direction: "center", className: "no-box-label" });
-
 
 
         // Function to get the appropriate icon URL based on the status

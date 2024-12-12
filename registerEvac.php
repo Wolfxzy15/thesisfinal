@@ -10,12 +10,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $latitude = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
         $longitude = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
         $evacAddress = !empty($_POST['evacAddress']) ? mysqli_real_escape_string($conn, $_POST['evacAddress']) : null;
+        $landmark = !empty($_POST['landmark']) ? mysqli_real_escape_string($conn, $_POST['landmark']) : null;
         $max = ceil(($width * 39.3701)/50) * (($height * 39.3701)/105);
 
         if ($evacName && $height && $width && $latitude && $longitude) {
             // Insert new evacuation center into tbl_evac_centers
-            $sql_site = "INSERT INTO tbl_evac_centers (evacName, height, width, latitude, longitude, evacAddress, max_capacity)
-                    VALUES ('$evacName', $height, $width, $latitude, $longitude, '$evacAddress', '$max')";
+            $sql_site = "INSERT INTO tbl_evac_centers (evacName, height, width, latitude, longitude, evacAddress, max_capacity, landmark)
+                    VALUES ('$evacName', $height, $width, $latitude, $longitude, '$evacAddress', '$max', '$landmark')";
             
             if (mysqli_query($conn, $sql_site)) {
                 $message = 'success';
@@ -71,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="form-group">
                 <label for="landmark">Landmark:</label>
-                <input type="number" id="landmark" name="landmark" class="form-control" readonly required>
+                <input type="text" id="landmark" name="landmark" class="form-control">
             </div>
             <div class="form-group">
                 <label for="latitude">Latitude:</label>

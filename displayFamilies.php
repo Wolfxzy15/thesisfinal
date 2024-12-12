@@ -1,6 +1,22 @@
 <?php
 session_start();
-$barangay = $_SESSION['username'];
+$barangay = $_SESSION['username'];  // No need to define this twice
+
+$barangay_map = [
+
+    'tabuc suba' => 1,
+    'cubay' => 2,
+    'san isidro' => 3,
+    'quintin salas' => 4
+];
+
+// Assign barangay_num based on the session barangay username
+if (array_key_exists($barangay, $barangay_map)) {
+    $barangay_num = $barangay_map[$barangay];
+} else {
+    $barangay_num = null;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -13,14 +29,10 @@ $barangay = $_SESSION['username'];
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="main.css">
-
-    <style>
-    </style>
 </head>
 
 <body>
@@ -66,10 +78,8 @@ $barangay = $_SESSION['username'];
 
                             if (isset($_POST['update_status'])) {
                                 foreach ($_POST['evacStatus'] as $family_id => $status) {
-                                    // Update each family's status in the database
                                     $sql = "UPDATE tbl_families SET evacStatus = '$status' WHERE family_id = '$family_id'";
                                     mysqli_query($conn, $sql);
-                                    
                                 }
                             }
 
@@ -77,47 +87,42 @@ $barangay = $_SESSION['username'];
                             $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
                             $sort_order = 'DESC';
                             
-                            $sql = "
-    SELECT 
-        f.family_id,
-        f.presentAddress,
-        f.latitude,
-        f.longitude,
-        COUNT(r.residentID) AS num_members,
-        SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
-        f.evacID,
-        f.evacStatus
-    FROM tbl_families f
-    LEFT JOIN tbl_residents r ON f.family_id = r.family_id
-    WHERE f.barangay = '$barangay'";  // Filter by the barangay session variable
+                            // Dynamic query based on barangay_num and search
+                            $sql = "SELECT f.family_id, f.presentAddress, f.latitude, f.longitude,
+                                            COUNT(r.residentID) AS num_members,
+                                            SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
+                                            f.evacID, f.evacStatus
+                                    FROM tbl_families f
+                                    LEFT JOIN tbl_residents r ON f.family_id = r.family_id";
 
-if (is_numeric($search_query)) {
-    $sql .= " AND f.family_id = '$search_query'";
-} elseif (!empty($search_query)) {
-    $sql .= " AND (f.family_id LIKE '%$search_query%' 
-                OR f.presentAddress LIKE '%$search_query%' 
-                OR r.lastName LIKE '%$search_query%' 
-                OR r.firstName LIKE '%$search_query%')";
-}
+                            if ($barangay_num != 0) {
+                                $sql .= " WHERE f.barangay_id = '$barangay_num'";
+                            }
 
-$sql .= " GROUP BY f.family_id";
+                            if (is_numeric($search_query)) {
+                                $sql .= " AND f.family_id = '$search_query'";
+                            } elseif (!empty($search_query)) {
+                                $sql .= " AND (f.family_id LIKE '%$search_query%' 
+                                            OR f.presentAddress LIKE '%$search_query%' 
+                                            OR r.lastName LIKE '%$search_query%' 
+                                            OR r.firstName LIKE '%$search_query%')";
+                            }
 
-// Sorting logic
-if ($sort_column) {
-    if ($sort_column == 'family_members') {
-        $sql .= " ORDER BY num_members $sort_order";
-    } elseif ($sort_column == 'pwd_status') {
-        $sql .= " ORDER BY num_pwd $sort_order";
-    } elseif ($sort_column == 'Evacuated') {
-        $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-    } elseif ($sort_column == 'Not Evacuated') {
-        $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Not Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-    } elseif ($sort_column == 'Needs Assistance') {
-        $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Needs Assistance' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-    }
-}
+                            $sql .= " GROUP BY f.family_id";
 
-                            
+                            if ($sort_column) {
+                                if ($sort_column == 'family_members') {
+                                    $sql .= " ORDER BY num_members $sort_order";
+                                } elseif ($sort_column == 'pwd_status') {
+                                    $sql .= " ORDER BY num_pwd $sort_order";
+                                } elseif ($sort_column == 'Evacuated') {
+                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
+                                } elseif ($sort_column == 'Not Evacuated') {
+                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Not Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
+                                } elseif ($sort_column == 'Needs Assistance') {
+                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Needs Assistance' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
+                                }
+                            }
 
                             $result = mysqli_query($conn, $sql);
 
@@ -186,5 +191,4 @@ if ($sort_column) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
 
 </body>
-<!-- swapped the register button from displayFamilies.php to viewFamily.php -->
 </html>

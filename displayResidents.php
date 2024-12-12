@@ -1,6 +1,24 @@
 <?php
 session_start();
 $barangay = $_SESSION['username'];
+
+$barangay_map = [
+
+    'tabuc suba' => 1,
+    'cubay' => 2,
+    'san isidro' => 3,
+    'quintin salas' => 4
+];
+
+
+if (array_key_exists($barangay, $barangay_map)) {
+    $barangay_num = $barangay_map[$barangay];
+} else {
+
+    $barangay_num = null; 
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -66,14 +84,19 @@ $barangay = $_SESSION['username'];
                             $sql = "SELECT r.*, f.evacStatus 
                                 FROM tbl_residents r 
                                 LEFT JOIN tbl_families f ON r.family_id = f.family_id 
-                                WHERE r.barangay = '$barangay'"; // Always true, allowing further conditions to be appended
+                                ";
+                            
+                            
 
-                            // If a specific family_id is provided, add it to the query
                             if ($family_id) {
                                 $sql .= " AND r.family_id = '$family_id'";
                             }
                             if (is_numeric($search_query)) {
                                 $sql .= " AND r.residentID = '$search_query'";
+                            }
+
+                            if ($barangay_num != 0) {
+                                $sql .= " WHERE r.barangay_id = '$barangay_num'";
                             }
                             // If a search query is provided, add it to the query
                             if (!empty($search_query)) {

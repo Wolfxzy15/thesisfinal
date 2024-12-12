@@ -92,10 +92,7 @@
                 <label for="cpassword">Confirm Password</label>
                 <input type="password" class="form-control" id="cpassword" placeholder="Confirm Password" name="cpassword" required>
               </div>
-              <div class="form-group">
-                <label for="emailAdd">Email Address</label>
-                <input type="emailAdd" class="form-control" id="emailAdd" placeholder="@email.com" name="emailAdd" required>
-              </div>
+              
               <div class="form-group">
                 <label for="userType">User Type</label>
                 <select name = "userType" id=userType class="form-control">
@@ -104,7 +101,7 @@
                 </select>
               </div>
               <button type="button" onclick="submitData();" class="btn btn-success" style="width: 100%">Register</button>
-              <p class="mb-0">Already have an account? <a href="login.php">Login here</a>.</p>
+              <p class="mb-0">Already have an account? <a href="index.php">Login here</a>.</p>
             </form>
             <?php require 'loginScript.php'; ?>
           </div>

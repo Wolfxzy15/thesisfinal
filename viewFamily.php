@@ -1,3 +1,31 @@
+<?php
+include 'db.php'; // Include database connection
+
+// Check if the barangay is provided in the POST request
+if (isset($_POST['barangay'])) {
+    $barangay = mysqli_real_escape_string($conn, $_POST['barangay']);
+    $family_id = $_GET['family_id']; // Assuming you are passing family_id via the URL
+
+    // Update the barangay in the tbl_families table
+    $sql_families = "UPDATE tbl_families SET barangay_id = '$barangay' WHERE family_id = '$family_id'";
+
+    // Update the barangay in the tbl_residents table for all residents in the family
+    $sql_residents = "UPDATE tbl_residents SET barangay_id = '$barangay' WHERE family_id = '$family_id'";
+
+    // Execute both queries
+    if (mysqli_query($conn, $sql_families) && mysqli_query($conn, $sql_residents)) {
+        echo "Barangay updated successfully!";
+        header("Location: viewFamily.php?family_id=$family_id"); // Redirect back to the page with updated family data
+        exit();
+    } else {
+        echo "Error updating barangay: " . mysqli_error($conn);
+    }
+} else {
+    echo "Barangay not provided!";
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -181,11 +209,15 @@
 
             <div class="container">
                 <label for="presentAdd">Present Address:</label>
-                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" readonly>
+                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" readonly>\
+                <form action="" method="POST">
+                <label for="barangay">Barangay:</label>
+                <input type="text" class="form-control" placeholder="barangay" id="barangay" name="barangay" readonly>
                 <div id="map" style="height: 400px;"></div>
                 <input type="hidden" id="latitude" name="latitude" value="<?php echo $family_row['latitude']; ?>">
                 <input type="hidden" id="longitude" name="longitude" value="<?php echo $family_row['longitude']; ?>"><br>
                 <button id="updateAddress" class="btn btn-primary">Update Address</button>
+                </form>
             </div>
 
 
@@ -325,7 +357,7 @@
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
     </script>
-    <script src="family_map.js"></script>
+    <script src="script.js"></script>
     <script>
 
         var iconUrl = "images/building-solid.svg";
