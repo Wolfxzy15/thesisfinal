@@ -31,6 +31,13 @@ fetch('geojson/sanisidro.geojson')
         L.geoJSON(geojsonData).addTo(map);
     });
 
+fetch('geojson/quintinsalas.geojson')
+    .then(response => response.json())
+    .then(geojsonData => {
+        barangays.quintinsalas = geojsonData;
+        L.geoJSON(geojsonData).addTo(map);
+    });
+
 // Custom icon for markers
 var familyIcon = L.icon({
     iconUrl: 'images/home2.svg',
@@ -98,6 +105,8 @@ function checkBarangay(latlng) {
         barangayName = '2';
     } else if (barangays.sanIsidro && isPointInPolygon(point, barangays.sanIsidro.features[0].geometry.coordinates)) {
         barangayName = '3';
+    } else if (barangays.quintinsalas && isPointInPolygon(point, barangays.quintinsalas.features[0].geometry.coordinates)) {
+        barangayName = '4';
     }
 
     // Update the input field with the detected barangay

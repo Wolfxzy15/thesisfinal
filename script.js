@@ -34,7 +34,7 @@ fetch('geojson/sanisidro.geojson')
 fetch('geojson/quintinsalas.geojson')
     .then(response => response.json())
     .then(geojsonData => {
-        barangays.quintinSalas = geojsonData;
+        barangays.quintinsalas = geojsonData;
         L.geoJSON(geojsonData).addTo(map);
     });
 
@@ -105,7 +105,7 @@ function checkBarangay(latlng) {
         barangayName = '2';
     } else if (barangays.sanIsidro && isPointInPolygon(point, barangays.sanIsidro.features[0].geometry.coordinates)) {
         barangayName = '3';
-    } else if (barangays.quintinSalas && isPointInPolygon(point, barangays.quintinSalas.features[0].geometry.coordinates)) {
+    } else if (barangays.quintinsalas && isPointInPolygon(point, barangays.quintinsalas.features[0].geometry.coordinates)) {
         barangayName = '4';
     }
 

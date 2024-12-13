@@ -373,7 +373,7 @@ $conn->close();
         });
     <?php endif; ?>
 </script>
-<script src="script.js"></script>
+<script src="family_map.js"></script>
 
 
 </html>
