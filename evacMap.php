@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     $evacWidth = $_POST['evacWidth'];
 
     // Calculate the max capacity based on the given formula
-    $maxCapacity = ceil(($evacWidth * 39.3701) / 50) * ceil(($evacHeight * 39.3701) / 105);
+    $maxCapacity = round((($evacWidth * 39.3701) / 50) * (($evacHeight * 39.3701) / 105));
+
 
     $updateSql = "UPDATE tbl_evac_centers SET evacName = ?, height = ?, width = ?, max_capacity = ? WHERE evacID = ?";
     if ($stmt = mysqli_prepare($conn, $updateSql)) {
