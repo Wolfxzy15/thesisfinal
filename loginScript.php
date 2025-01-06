@@ -1,3 +1,5 @@
+
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
 </script>
 <script type="text/javascript">
@@ -26,7 +28,7 @@
               showConfirmButton: false,
               timer: 1000,
             }).then(() => {
-              window.location.href = 'RESIDENTREGISTER.php';
+              window.location.href = 'evacMap.php';
             });
           }
           else if (response.trim() == "User Login Successful") {

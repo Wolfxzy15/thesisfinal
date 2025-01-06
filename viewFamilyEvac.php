@@ -50,7 +50,7 @@ session_start();
                     <input type="hidden" name="family_id" value="<?php echo $family_id; ?>">
                     <input type="hidden" name="latitude" value="<?php echo $latitude; ?>">
                     <input type="hidden" name="longitude" value="<?php echo $longitude; ?>">
-                    
+                    <button class="btn btn-success ml-4" type="submit"><i class="fa-solid fa-building pr-2"></i>Evacuation Center</button>
                 </form>
             </div>
             <br>
@@ -66,94 +66,110 @@ session_start();
                                 <th scope="col">Age</th>
                                 <th scope="col">Sex</th>
                                 <th scope="col">PWD</th>
+                                <th scope="col">Evacuation Status</th>
                                 <th scope="col">EDIT Info</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php
-                            include 'db.php';
+    <?php
+    include 'db.php';
 
+    // Get family_id and search parameters
+    $family_id = isset($_GET['family_id']) ? intval($_GET['family_id']) : 0;
+    $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+    $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
+    $sort_order = 'ASC';
+    $presentAddress = '';
 
-                            // Get family_id and search parameters
-                            $family_id = isset($_GET['family_id']) ? intval($_GET['family_id']) : 0;
-                            $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-                            $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
-                            $sort_order = 'ASC';
-                            $presentAddress = '';
+    // Build the base query
+    $sql = "SELECT r.*, f.presentAddress, f.latitude, f.longitude, f.evacID  
+            FROM tbl_residents r 
+            LEFT JOIN tbl_families f ON r.family_id = f.family_id 
+            WHERE 1"; // Always true, allowing further conditions to be appended
 
+    // If a specific family_id is provided, add it to the query
+    if ($family_id) {
+        $sql .= " AND r.family_id = '$family_id'";
+    }
+    if (is_numeric($search_query)) {
+        $sql .= " AND r.residentID = '$search_query'";
+    }
+    // If a search query is provided, add it to the query
+    if (!empty($search_query)) {
+        $sql .= " AND (r.residentID LIKE '%$search_query%' OR 
+                        r.kinship LIKE '%$search_query%' OR 
+                        r.lastName LIKE '%$search_query%' OR 
+                        r.firstName LIKE '%$search_query%' OR 
+                        r.age LIKE '%$search_query%' OR 
+                        r.sex LIKE '%$search_query%' OR   
+                        r.pwd LIKE '%$search_query%')";
+    }
 
-                            // Build the base query
-                            $sql = "SELECT r.*, f.presentAddress, f.latitude, f.longitude  
-                                FROM tbl_residents r 
-                                LEFT JOIN tbl_families f ON r.family_id = f.family_id 
-                                WHERE 1"; // Always true, allowing further conditions to be appended
+    // Sorting logic
+    if ($sort_column) {
+        if ($sort_column == 'pwd') {
+            // Special sorting for PWD status
+            $sql .= " ORDER BY r.pwd = 'NO', r.pwd $sort_order";
+        } else {
+            $sql .= " ORDER BY $sort_column $sort_order";
+        }
+    }
 
-                            // If a specific family_id is provided, add it to the query
-                            if ($family_id) {
-                                $sql .= " AND r.family_id = '$family_id'";
-                            }
-                            if (is_numeric($search_query)) {
-                                $sql .= " AND r.residentID = '$search_query'";
-                            }
-                            // If a search query is provided, add it to the query
-                            if (!empty($search_query)) {
-                                $sql .= " AND (r.residentID LIKE '%$search_query%' OR 
-                                        r.kinship LIKE '%$search_query%' OR 
-                                        r.lastName LIKE '%$search_query%' OR 
-                                        r.firstName LIKE '%$search_query%' OR 
-                                        r.age LIKE '%$search_query%' OR 
-                                        r.sex LIKE '%$search_query%' OR   
-                                        r.pwd LIKE '%$search_query%')";
-                            }
+    // Execute the query
+    $result = mysqli_query($conn, $sql);
 
-                            // Sorting logic
-                            if ($sort_column) {
-                                if ($sort_column == 'pwd') {
-                                    // Special sorting for PWD status
-                                    $sql .= " ORDER BY r.pwd = 'NO', r.pwd $sort_order";
-                                } else {
-                                    $sql .= " ORDER BY $sort_column $sort_order";
-                                }
-                            }
+    // Check if there are results and output them in the table
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $id = $row['residentID'];
+            $family_id = $row['family_id'];
+            $lastName = $row['lastName'];
+            $fName = $row['firstName'];
+            $age = $row['age'];
+            $sex = $row['sex'];
+            $pwd = $row['pwd'];
+            $evacStatus = $row['evacStatus'];
+            $evacID = $row['evacID'];  // Evacuation ID
 
-                            // Execute the query
-                            $result = mysqli_query($conn, $sql);
+            // Handle different evacStatus cases and check for evacID
+            echo '<tr>
+                <th scope="row">' . $family_id . '</th>
+                <td>' . $id . '</td>
+                <td>' . $lastName . '</td>
+                <td>' . $fName . '</td>
+                <td>' . $age . '</td>
+                <td>' . $sex . '</td>
+                <td>' . $pwd . '</td>
+                <td>';
+            
+            // Lock the status dropdown if evacID is 0
+            if ($evacID == 0) {
+                echo '<select class="form-control evac-status-dropdown" disabled>
+                        <option value="Not Evacuated"' . ($evacStatus === 'Not Evacuated' ? ' selected' : '') . '>Not Evacuated</option>
+                        <option value="Evacuated"' . ($evacStatus === 'Evacuated' ? ' selected' : '') . '>Evacuated</option>
+                        <option value="Needs Assistance"' . ($evacStatus === 'Needs Assistance' ? ' selected' : '') . '>Needs Assistance</option>
+                    </select>';
+            } else {
+                echo '<select class="form-control evac-status-dropdown" onchange="changeBackgroundColor(this)" data-resident-id="' . $id . '">
+                        <option value="Not Evacuated"' . ($evacStatus === 'Not Evacuated' ? ' selected' : '') . '>Not Evacuated</option>
+                        <option value="Evacuated"' . ($evacStatus === 'Evacuated' ? ' selected' : '') . '>Evacuated</option>
+                        <option value="Needs Assistance"' . ($evacStatus === 'Needs Assistance' ? ' selected' : '') . '>Needs Assistance</option>
+                    </select>';
+            }
+            echo '</td>
+                <td>
+                    <button class="btn btn-success">
+                        <a href="editResident.php?updateID=' . urlencode($id) . '" class="text-light">EDIT</a>
+                    </button>
+                </td>
+            </tr>';
+        }
+    } else {
+        echo "<tr><td colspan='9' class='text-center'>No records found</td></tr>";
+    }
+    ?>
+</tbody>
 
-                            // Check if there are results and output them in the table
-                            if ($result) {
-                                while ($row = mysqli_fetch_assoc($result)) {
-                                    $id = $row['residentID'];
-                                    $family_id = $row['family_id'];
-                                    $lastName = $row['lastName'];
-                                    $fName = $row['firstName'];
-                                    $age = $row['age'];
-                                    $sex = $row['sex'];
-                                    $pwd = $row['pwd'];
-                                    $evacStatus = $row['evacStatus'];
-
-                                    // Handle different evacStatus cases
-                                    echo '<tr>
-                                        <th scope="row">' . $family_id . '</th>
-                                        <td>' . $id . '</td>
-                                        <td>' . $lastName . '</td>
-                                        <td>' . $fName . '</td>
-                                        <td>' . $age . '</td>
-                                        <td>' . $sex . '</td>
-                                        <td>' . $pwd . '</td>
-                                        
-
-                                        <td>
-                                            <button class="btn btn-success">
-                                                <a href="editResident.php?updateID=' . urlencode($id) . '" class="text-light">EDIT</a>
-                                            </button>
-                                        </td>
-                                    </tr>';
-                                }
-                            } else {
-                                echo "<tr><td colspan='9' class='text-center'>No records found</td></tr>";
-                            }
-                            ?>
-                        </tbody>
                     </table>
                 </form>
             </div>

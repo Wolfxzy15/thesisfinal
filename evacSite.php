@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'db.php'; // Connect to the database
 
 // Function to calculate distance using Haversine Formula
@@ -23,15 +24,20 @@ function haversine($lat1, $lon1, $lat2, $lon2)
     return $earth_radius * $c; // Distance in kilometers
 }
 
-$sql = "SELECT evac.evacID, evac.evacName, evac.max_capacity, 
-               COUNT(res.residentID) AS current_capacity, 
-               (evac.max_capacity <= COUNT(res.residentID)) AS is_full, 
-               GROUP_CONCAT(fam.family_id) AS family_ids,
-               COUNT(res.residentID) AS member_count
-        FROM tbl_evac_centers evac
-        LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
-        LEFT JOIN tbl_residents res ON fam.family_id = res.family_id
-        GROUP BY evac.evacID";
+$sql = "
+SELECT evac.evacID, evac.evacName, evac.max_capacity, 
+    IFNULL(SUM(fam.num_members), 0) AS current_capacity, 
+    CASE 
+        WHEN IFNULL(SUM(fam.num_members), 0) >= evac.max_capacity THEN 'Full'
+        WHEN IFNULL(SUM(fam.num_members), 0) >= (evac.max_capacity * 0.8) THEN 'Almost Full'
+        ELSE 'Available'
+    END AS status,
+    evac.latitude, evac.longitude, evac.height, evac.width
+FROM tbl_evac_centers evac
+LEFT JOIN tbl_families fam ON evac.evacID = fam.evacID
+GROUP BY evac.evacID";
+
+
 
 
 $result = mysqli_query($conn, $sql);
@@ -156,7 +162,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
 </head>
 
 <body>
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <main>
         <div class="container1">
 
@@ -182,41 +188,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
                     <?= $isRegistered ? 'Already Registered' : 'Register'; ?>
                 </button>
             </form>
-        </div><br>
-        <div class="container1">
-            <h2>Evacuation Site Status</h2>
-
-            <?php if ($result): ?>
-                <table class="table ">
-                    <thead>
-                        <tr>
-                            <th>Evacuation Center</th>
-                            <th>Max Capacity</th>
-                            <th>Current Capacity -Families</th>
-                            <th>Status</th>
-                            <th>Total No. of Residents</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($evac = mysqli_fetch_assoc($result)): ?>
-                            <tr>
-                                <td><?= $evac['evacName']; ?></td>
-                                <td><?= $evac['max_capacity']; ?></td>
-                                <td><?= $evac['current_capacity']; ?></td>
-                                <td class="<?= $evac['is_full'] ? 'text-danger' : 'text-success'; ?>">
-                                    <?= $evac['is_full'] ? 'Full' : 'Available'; ?>
-                                </td>
-                                <td><?= $evac['member_count']; ?></td>
-                            </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p>No evacuation centers found.</p>
-            <?php endif; ?>
-
-        </div>
+        
     </main>
     <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
     <script>
@@ -280,7 +252,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = 'displayFamilies.php';
+                window.location.href = 'evacuation.php';
             });
         <?php else: ?>
             Swal.fire({

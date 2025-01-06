@@ -21,10 +21,9 @@ function registerPage() {
     $username = $_POST["username"];
     $password = $_POST["password"];
     $cpassword = $_POST["cpassword"];
-    $emailAdd = $_POST["emailAdd"];
     $userType = $_POST["userType"];
 
-    if (empty($firstName) || empty($lastName) || empty($cpassword) || empty($username) || empty($password) || empty($emailAdd) || empty($userType)) {
+    if (empty($firstName) || empty($lastName) || empty($cpassword) || empty($username) || empty($password) || empty($userType)) {
         echo "Please Fill Out The Form!";
         exit;
     }
@@ -40,8 +39,8 @@ function registerPage() {
         exit;
     }
 
-    $query = "INSERT INTO tbl_register (firstName, lastName, username, password, emailAdd, userType) 
-    VALUES('$firstName', '$lastName', '$username', '$password',  '$emailAdd', '$userType')";
+    $query = "INSERT INTO tbl_register (firstName, lastName, username, password, userType) 
+    VALUES('$firstName', '$lastName', '$username', '$password', '$userType')";
     mysqli_query($conn, $query);
     echo "Registration Successful";
 }

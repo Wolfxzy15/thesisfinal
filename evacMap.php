@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-<?php include 'include/sidebar.php'; ?>
+<?php include 'sidebar.php'; ?>
 
 <main>
     <div class="container1">
@@ -106,8 +106,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         </thead>
         <tbody>
             <tr>
-                <th scope="row"><i class="fa-solid fa-building"></i></th>
-                <td>- Evacuation Centers</td>
+            <th scope="row">
+                <img src="images/building-solid-green.svg" alt="Building Icon" style="width: 20px; height: 20px;">
+            </th>
+                <td>Available</td>
+            </tr>
+            <tr>
+            <th scope="row">
+                <img src="images/building-solid-orange.svg" alt="Building Icon" style="width: 20px; height: 20px;">
+            </th>
+                <td>Almost Full</td>
+            </tr>
+            <tr>
+            <th scope="row">
+                <img src="images/building-solid-red.svg" alt="Building Icon" style="width: 20px; height: 20px;">
+            </th>
+                <td>Full</td>
             </tr>
         </tbody>
     </table>

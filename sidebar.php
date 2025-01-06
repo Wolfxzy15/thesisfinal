@@ -1,6 +1,39 @@
+<?php
+
+
+// Check if the user is logged in by ensuring the session variable 'username' is set
+if (!isset($_SESSION['username'])) {
+    // Redirect to login page if the user is not logged in
+    header("Location: index.php");
+    exit();
+}
+
+$usernames = $_SESSION['username']; // User's username from session
+
+// Include the database connection file
+include 'db.php';
+
+// Initialize the variable for userType
+$userType = '';
+
+// Query to get the user type from the database
+$sql = "SELECT userType FROM tbl_register WHERE username = '$usernames'";
+$result = mysqli_query($conn, $sql);
+
+// Check if the query is successful and if a row is returned
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    $userType = $row['userType'];  // Get the user type (admin or user)
+} else {
+    // Handle error if the query fails or user not found
+    echo "Error fetching user type or user not found.";
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <title>nav</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
     <meta charset="utf-8" />
@@ -12,43 +45,44 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <link rel="stylesheet" href="main.css">
-  </head>
-  <body>
-  <header>
+</head>
+<body>
+    <header>
         <div class="menu-toggle" id="menu-toggle">&#9776;</div>
         <a class="navbar-brand ml-2" href="#">
-            <img src="images/citylogo.png"
-                width="40" height="40" class="d-inline-block align-center" alt="">
+            <img src="images/citylogo.png" width="40" height="40" class="d-inline-block align-center" alt="">
         </a>
-        <h1 style="margin-left: 0;">Barangay</h1>
+        <h1 style="margin-left: 0;"><?php echo $usernames?></h1>
         <a class="nav-link ml-auto" style="color:aliceblue" href="logout.php"><i class="fa-solid fa-sign-out pr-2"></i>Logout <span class="sr-only">(current)</span></a>
     </header>
 
     <aside class="sidebar" id="sidebar">
         <nav>
             <ul><br>
-                <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i></i>Add Residents <span class="sr-only">(current)</span></a></li>
+            <li><a class="nav-link" href="evacMap.php"><i class="fa-solid fa-map pr-2"></i>Evac Map<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i>Add Residents <span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="displayFamilies.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i></i>Edit Residents<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="evacSite.php"><i class="fa-solid fa-edit pr-2"></i></i>Evacuation Centers<span class="sr-only">(current)</span></a></li>
-                <br><br><br><br><br><br>
-               
+                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i>Edit Residents<span class="sr-only">(current)</span></a></li>
                 
+                <?php if ($userType === 'admin'): ?>
+                    <li><a class="nav-link" href="registerEvac.php"><i class="fa-solid fa-building pr-2"></i>Add new Evac Site<span class="sr-only">(current)</span></a></li>
+                <?php endif; ?>
+
+                
+                <li><a class="nav-link" href="evacuation.php"><i class="fa-solid fa-house pr-2"></i>Evacuation<span class="sr-only">(current)</span></a></li>
             </ul>
         </nav>
     </aside>
-  </body>
-  <script>
+</body>
+<script>
     document.getElementById('menu-toggle').addEventListener('click', function () {
-    var sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('active');
-    //Map
-    var mapControls = document.querySelectorAll('#map .leaflet-control');
-    mapControls.forEach(control => {
-        control.style.display = sidebar.classList.contains('active') ? 'none' : 'block';
+        var sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+        // Map
+        var mapControls = document.querySelectorAll('#map .leaflet-control');
+        mapControls.forEach(control => {
+            control.style.display = sidebar.classList.contains('active') ? 'none' : 'block';
+        });
     });
-});
-
-  </script>
-  
+</script>
 </html>

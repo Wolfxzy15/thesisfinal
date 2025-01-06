@@ -1,4 +1,5 @@
 <?php
+session_start();
 $servername = "localhost"; // or your server
 $username = "root"; // your database username
 $password = ""; // your database password
@@ -136,7 +137,7 @@ if (isset($_POST["update"])) {
 </head>
 
 <body>
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <main>
         <div class="container">
             <form autocomplete="off" action="" method="post">

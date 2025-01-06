@@ -154,7 +154,7 @@ $conn->close();
 </head>
 
 <body>
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <main>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -172,15 +172,15 @@ $conn->close();
                 <h3>Family Member ${formCount}</h3>
                 <div class="row row-cols-2 mb-3">
                     <div class="col-md-4 mb-2">
-                        <label for="lastName${formCount}">Lastname:</label>
+                        <label for="lastName${formCount}">Last name:</label>
                         <input type="text" class="form-control" placeholder="Last name" id="lastName${formCount}" name="lastName[]">
                     </div>
                     <div class="col-md-4 mb-2">
-                        <label for="fName${formCount}">Firstname:</label>
+                        <label for="fName${formCount}">First name:</label>
                         <input type="text" class="form-control" placeholder="First name" id="fName${formCount}" name="fName[]">
                     </div>
                     <div class="col-md-4 mb-2">
-                        <label for="mName${formCount}">Middlename:</label>
+                        <label for="mName${formCount}">Middle name:</label>
                         <input type="text" class="form-control" placeholder="Middle name" id="mName${formCount}" name="mName[]">
                     </div>
                     <div class="col-md-4 mb-2">
@@ -230,15 +230,15 @@ $conn->close();
                     </div>
                     <div class="col-md-2 mb-2">
                         <label for="height${formCount}">Height:</label>
-                        <input type="text" class="form-control" id="height${formCount}" name="height[]">
+                        <input type="text" class="form-control" id="height${formCount}" name="height[]" placeholder="centimeters">
                     </div>
                     <div class="col-md-2 mb-2">
                         <label for="weight${formCount}">Weight:</label>
-                        <input type="text" class="form-control" id="weight${formCount}" name="weight[]">
+                        <input type="text" class="form-control" id="weight${formCount}" name="weight[]" placeholder="kilograms" >
                     </div>
                     <div class="col-md-4 mb-2">
                         <label for="contactNo${formCount}">Contact Number:</label>
-                        <input type="text" class="form-control" id="contactNo${formCount}" name="contactNo[]">
+                        <input type="text" class="form-control" id="contactNo${formCount}" name="contactNo[]" placeholder="ex: 09187165891">
                     </div>
                     <div class="col-md-4 mb-2">
                         <label for="religion${formCount}">Religion:</label>
@@ -246,7 +246,7 @@ $conn->close();
                     </div>
                     <div class="col-md-4 mb-2">
                         <label for="emailAdd${formCount}">Email Address:</label>
-                        <input type="email" class="form-control" id="emailAdd${formCount}" name="emailAdd[]">
+                        <input type="email" class="form-control" id="emailAdd${formCount}" name="emailAdd[]" placeholder="ex: user@email.com">
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="occupation${formCount}">Occupation:</label>

@@ -1,4 +1,5 @@
 <?php
+session_start();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['registerEvacCenter'])) {
         include 'db.php'; // Ensure the database connection is included
@@ -47,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <?php include 'include/sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
 
     <main>
         <div class="container2">
