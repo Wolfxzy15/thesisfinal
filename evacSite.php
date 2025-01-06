@@ -204,7 +204,7 @@ if (isset($_GET['family_id']) && isset($_GET['latitude']) && isset($_GET['longit
 
     // Family marker
     var familyIcon = L.icon({
-        iconUrl: "images/shelter.svg", 
+        iconUrl: "images/home.svg", 
         iconSize: [32, 32]
     });
     L.marker([familyLat, familyLong], { icon: familyIcon }).addTo(map)
