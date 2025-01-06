@@ -1,31 +1,3 @@
-<?php
-include 'db.php'; // Include database connection
-
-// Check if the barangay is provided in the POST request
-if (isset($_POST['barangay'])) {
-    $barangay = mysqli_real_escape_string($conn, $_POST['barangay']);
-    $family_id = $_GET['family_id']; // Assuming you are passing family_id via the URL
-
-    // Update the barangay in the tbl_families table
-    $sql_families = "UPDATE tbl_families SET barangay_id = '$barangay' WHERE family_id = '$family_id'";
-
-    // Update the barangay in the tbl_residents table for all residents in the family
-    $sql_residents = "UPDATE tbl_residents SET barangay_id = '$barangay' WHERE family_id = '$family_id'";
-
-    // Execute both queries
-    if (mysqli_query($conn, $sql_families) && mysqli_query($conn, $sql_residents)) {
-        echo "Barangay updated successfully!";
-        header("Location: viewFamily.php?family_id=$family_id"); // Redirect back to the page with updated family data
-        exit();
-    } else {
-        echo "Error updating barangay: " . mysqli_error($conn);
-    }
-} else {
-    echo "Barangay not provided!";
-}
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -84,8 +56,8 @@ if (isset($_POST['barangay'])) {
                     <table class="table table-hover table-bordered table-light">
                         <thead>
                             <tr>
-                                <th scope="col">Resident ID</th>
                                 <th scope="col">Family ID</th>
+                                <th scope="col">Resident ID</th>
                                 <th scope="col">Lastname</th>
                                 <th scope="col">Firstname</th>
                                 <th scope="col">Age</th>
@@ -109,7 +81,7 @@ if (isset($_POST['barangay'])) {
 
 
                             // Build the base query
-                            $sql = "SELECT r.*, f.evacStatus, f.presentAddress, f.latitude, f.longitude  
+                            $sql = "SELECT r.*, f.presentAddress, f.latitude, f.longitude  
                                 FROM tbl_residents r 
                                 LEFT JOIN tbl_families f ON r.family_id = f.family_id 
                                 WHERE 1"; // Always true, allowing further conditions to be appended
@@ -158,24 +130,22 @@ if (isset($_POST['barangay'])) {
                                     $evacStatus = $row['evacStatus'];
 
                                     // Handle different evacStatus cases
-                                    $status_class = '';
-                                    if ($evacStatus === 'Evacuated') {
-                                        $status_class = 'status-evacuated';
-                                    } elseif ($evacStatus === 'Needs Assistance') {
-                                        $status_class = 'status-needs-assistance';
-                                    } else {
-                                        $status_class = 'status-not-evacuated';
-                                    }
-
                                     echo '<tr>
-                                        <th scope="row">' . $id . '</th>
-                                        <td>' . $family_id . '</td>
+                                        <th scope="row">' . $family_id . '</th>
+                                        <td>' . $id . '</td>
                                         <td>' . $lastName . '</td>
                                         <td>' . $fName . '</td>
                                         <td>' . $age . '</td>
                                         <td>' . $sex . '</td>
                                         <td>' . $pwd . '</td>
-                                       <td class="' . $status_class . '">' . $evacStatus . '</td>
+                                        <td>
+                                        <select class="form-control evac-status-dropdown" onchange="changeBackgroundColor(this)" data-resident-id="' . $id . '">
+                                            <option value="Not Evacuated"' . ($evacStatus === 'Not Evacuated' ? ' selected' : '') . '>Not Evacuated</option>
+                                            <option value="Evacuated"' . ($evacStatus === 'Evacuated' ? ' selected' : '') . '>Evacuated</option>
+                                            <option value="Needs Assistance"' . ($evacStatus === 'Needs Assistance' ? ' selected' : '') . '>Needs Assistance</option>
+                                        </select>
+                                        </td>
+
                                         <td>
                                             <button class="btn btn-success">
                                                 <a href="editResident.php?updateID=' . urlencode($id) . '" class="text-light">EDIT</a>
@@ -209,18 +179,14 @@ if (isset($_POST['barangay'])) {
 
             <div class="container">
                 <label for="presentAdd">Present Address:</label>
-                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" readonly>\
-                <form action="" method="POST">
-                <label for="barangay">Barangay:</label>
-                <input type="text" class="form-control" placeholder="barangay" id="barangay" name="barangay" readonly>
+                <input type="text" class="form-control" value="<?php echo $family_row['presentAddress']; ?>" placeholder="Present Address" id="presentAddress" name="presentAddress" readonly>
                 <div id="map" style="height: 400px;"></div>
                 <input type="hidden" id="latitude" name="latitude" value="<?php echo $family_row['latitude']; ?>">
                 <input type="hidden" id="longitude" name="longitude" value="<?php echo $family_row['longitude']; ?>"><br>
                 <button id="updateAddress" class="btn btn-primary">Update Address</button>
-                </form>
             </div>
 
-
+           
             <div class="modal fade" id="addFamilyMemberModal" tabindex="-1" role="dialog" aria-labelledby="addFamilyMemberModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -357,20 +323,17 @@ if (isset($_POST['barangay'])) {
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
     </script>
-    <script src="script.js"></script>
+    <script src="family_map.js"></script>
     <script>
 
         var iconUrl = "images/building-solid.svg";
-        
 
         var evacMarker = L.icon({
-        iconUrl: iconUrl,  // Use the color-specific SVG based on status
-        iconSize: [35, 35], // Size of the icon
-        iconAnchor: [17, 35], // Anchor point of the icon
-        popupAnchor: [0, -35], // Where the popup shows up
-
+        iconUrl: iconUrl, 
+        iconSize: [35, 35], 
+        iconAnchor: [17, 35], 
+        popupAnchor: [0, -35], 
     });
-
 
         if (<?php echo json_encode($evacLat); ?> && <?php echo json_encode($evacLon); ?>) {
             var evacMarker = L.marker([<?php echo $evacLat; ?>, <?php echo $evacLon; ?>], {icon: evacMarker}).addTo(map)
@@ -379,6 +342,53 @@ if (isset($_POST['barangay'])) {
             console.log("Evacuation center not registered for this family.");
         }
     </script>
+    <script>
+    function changeBackgroundColor(selectElement) {
+        
+        selectElement.style.backgroundColor = 'white';
+
+        
+        var selectedValue = selectElement.value;
+
+        if (selectedValue === 'Evacuated') {
+            selectElement.style.backgroundColor = 'green';
+            selectElement.style.color = 'white'; 
+        } else if (selectedValue === 'Not Evacuated') {
+            selectElement.style.backgroundColor = 'red';
+            selectElement.style.color = 'white'; 
+        } else if (selectedValue === 'Needs Assistance') {
+            selectElement.style.backgroundColor = 'yellow';
+            selectElement.style.color = 'black'; 
+        }
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var selectElements = document.querySelectorAll('.evac-status-dropdown');
+        selectElements.forEach(function(selectElement) {
+            changeBackgroundColor(selectElement); 
+        });
+    });
+    
+    $(document).on('change', '.evac-status-dropdown', function () {
+    var selectedStatus = $(this).val();
+    var residentID = $(this).data('resident-id');
+
+    $.ajax({
+        url: 'updateEvacStatus.php',
+        type: 'POST',
+        data: { evacStatus: selectedStatus, residentID: residentID },
+        success: function (response) {
+            console.log('Evacuation status updated successfully!');
+        },
+        error: function (xhr, status, error) {
+            console.error('Error updating evacuation status:', error);
+        }
+    });
+});
+
+</script>
+
 </body>
 
 </html>

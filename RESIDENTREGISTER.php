@@ -335,7 +335,6 @@ $conn->close();
         <div class="container">
             <form id="familyForm" method="post">
                 <h1>Family Registration Form</h1><br>
-                <button type="submit" class="btn btn-success" form="familyForm" name="submit">Submit All</button><br><br>
                 <label for="presentAddress"><b>Present Address:</b></label><br>
                 <input type="text" class="form-control" placeholder="Choose from the map" id="presentAddress" name="presentAddress" required readonly>
                 <label for="presentAddress"><b>Barangay:</b></label><br>
@@ -344,7 +343,8 @@ $conn->close();
                 <input type="hidden" id="latitude" name="latitude">
                 <input type="hidden" id="longitude" name="longitude"><br>
                 <hr>
-                <button type="button" class="btn btn-primary" onclick="addForm()"><i class="fa-solid fa-user-plus pr-2"></i>Add Family Member</button><br><br>
+                <button type="button" class="btn btn-primary" onclick="addForm()"><i class="fa-solid fa-user-plus pr-2" style="margin-right: 10px;"></i>Add Family Member</button>
+                <button type="submit" class="btn btn-success" form="familyForm" name="submit">Submit All</button><br><br>
             </form>
         </div>
     </main>

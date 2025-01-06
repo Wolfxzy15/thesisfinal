@@ -1,60 +1,60 @@
 <?php
 session_start();
-$barangay = $_SESSION['username'];  // No need to define this twice
+$barangay = $_SESSION['username']; // User's barangay or admin
 
+// Barangay mapping
 $barangay_map = [
-
     'tabuc suba' => 1,
     'cubay' => 2,
     'san isidro' => 3,
     'quintin salas' => 4
 ];
 
-// Assign barangay_num based on the session barangay username
-if (array_key_exists($barangay, $barangay_map)) {
-    $barangay_num = $barangay_map[$barangay];
-} else {
-    $barangay_num = null;
-}
+// Check if the user is an admin
+$is_admin = ($barangay === 'admin');
 
+// Determine barangay_num based on user session or dropdown
+if ($is_admin && isset($_GET['barangay_filter'])) {
+    // For admin, get barangay_num from dropdown
+    $selected_barangay = $_GET['barangay_filter'];
+    $barangay_num = $barangay_map[$selected_barangay] ?? null;
+} else {
+    // For regular users, use session username
+    $barangay_num = $barangay_map[$barangay] ?? null;
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Families</title>
-    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <link rel="stylesheet" href="main.css">
+    <!-- Include your CSS/JS libraries here (Bootstrap, Leaflet, etc.) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
-
 <body>
-
     <?php include 'include/sidebar.php'; ?>
     <main>
-        
         <div class="table-container">
-            <form class="form-inline mx-auto" method="GET" action="">
-                <label><span style="color:black; font-size: 20px">Search Family ID#</span> </label>
-                <input class="form-control mr-sm-2 ml-2" type="search" name="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-light mr-sm-2" type="submit" style="background-color: #E1D7B7; color: black;">Search</button>
-                <select name="sort" class="form-control mr-sm-2">
-                    <option value="">Sort By</option>
-                    <option value="family_members">Number of Family Members</option>
-                    <option value="pwd_status">PWD Status</option>
-                    <option value="Not Evacuated">Not Evacuated</option>
-                    <option value="Evacuated">Evacuated Families</option>
-                    <option value="Needs Assistance">Needs Assistance</option>
-                </select>
-                <button class="btn btn-light" type="submit" style="background-color: #E1D7B7; color: black;">Sort</button>
-            </form>
+            <!-- Admin Filter Dropdown -->
+            <?php if ($is_admin): ?>
+                <form class="form-inline mx-auto" method="GET" action="">
+                    <label><span style="color:black; font-size: 20px">Select Barangay:</span></label>
+                    <select class="form-control ml-2 mr-2" name="barangay_filter" onchange="this.form.submit()">
+                        <option value="">All Barangays</option>
+                        <?php foreach ($barangay_map as $name => $id): ?>
+                            <option value="<?php echo $name; ?>" <?php echo (isset($_GET['barangay_filter']) && $_GET['barangay_filter'] == $name) ? 'selected' : ''; ?>>
+                                <?php echo ucfirst($name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
+
             <br>
             <div class="table-wrapper">
                 <form method="POST">
@@ -66,63 +66,31 @@ if (array_key_exists($barangay, $barangay_map)) {
                                 <th scope="col">Number of Members</th>
                                 <th scope="col">Number of PWD</th>
                                 <th scope="col">Evacuation Center #</th>
-                                <th scope="col">Choose Status</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">View Family</th>
-                                <th scope="col">Update Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             include 'db.php';
 
-                            if (isset($_POST['update_status'])) {
-                                foreach ($_POST['evacStatus'] as $family_id => $status) {
-                                    $sql = "UPDATE tbl_families SET evacStatus = '$status' WHERE family_id = '$family_id'";
-                                    mysqli_query($conn, $sql);
-                                }
-                            }
-
-                            $search_query = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-                            $sort_column = isset($_GET['sort']) ? mysqli_real_escape_string($conn, $_GET['sort']) : '';
-                            $sort_order = 'DESC';
-                            
                             // Dynamic query based on barangay_num and search
                             $sql = "SELECT f.family_id, f.presentAddress, f.latitude, f.longitude,
                                             COUNT(r.residentID) AS num_members,
                                             SUM(CASE WHEN r.PWD = 'YES' THEN 1 ELSE 0 END) AS num_pwd,
-                                            f.evacID, f.evacStatus
+                                            f.evacID, 
+                                            SUM(CASE WHEN r.evacStatus = 'Evacuated' THEN 1 ELSE 0 END) AS num_evacuated,
+                                            SUM(CASE WHEN r.evacStatus = 'Not Evacuated' THEN 1 ELSE 0 END) AS num_not_evacuated,
+                                            SUM(CASE WHEN r.evacStatus = 'Needs Assistance' THEN 1 ELSE 0 END) AS num_needs_assistance
                                     FROM tbl_families f
                                     LEFT JOIN tbl_residents r ON f.family_id = r.family_id";
 
-                            if ($barangay_num != 0) {
+                            // Filter by barangay ID
+                            if ($barangay_num !== null) {
                                 $sql .= " WHERE f.barangay_id = '$barangay_num'";
                             }
 
-                            if (is_numeric($search_query)) {
-                                $sql .= " AND f.family_id = '$search_query'";
-                            } elseif (!empty($search_query)) {
-                                $sql .= " AND (f.family_id LIKE '%$search_query%' 
-                                            OR f.presentAddress LIKE '%$search_query%' 
-                                            OR r.lastName LIKE '%$search_query%' 
-                                            OR r.firstName LIKE '%$search_query%')";
-                            }
-
                             $sql .= " GROUP BY f.family_id";
-
-                            if ($sort_column) {
-                                if ($sort_column == 'family_members') {
-                                    $sql .= " ORDER BY num_members $sort_order";
-                                } elseif ($sort_column == 'pwd_status') {
-                                    $sql .= " ORDER BY num_pwd $sort_order";
-                                } elseif ($sort_column == 'Evacuated') {
-                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-                                } elseif ($sort_column == 'Not Evacuated') {
-                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Not Evacuated' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-                                } elseif ($sort_column == 'Needs Assistance') {
-                                    $sql .= " ORDER BY (CASE WHEN f.evacStatus = 'Needs Assistance' THEN 1 ELSE 0 END) DESC, num_members $sort_order";
-                                }
-                            }
 
                             $result = mysqli_query($conn, $sql);
 
@@ -132,27 +100,10 @@ if (array_key_exists($barangay, $barangay_map)) {
                                     $presentAddress = $row['presentAddress'];
                                     $num_members = $row['num_members'];
                                     $num_pwd = $row['num_pwd'];
-                                    $latitude = $row['latitude'];
-                                    $longitude = $row['longitude'];
                                     $evacID = $row['evacID'];
-                                    $status = $row['evacStatus']; // Added status field
-
-                                    // Options for family status dropdown
-                                    $status_options = "
-                                        <option value='Evacuated' class='status-evacuated' " . ($status == 'Evacuated' ? 'selected' : '') . ">Evacuated</option>
-                                        <option value='Not Evacuated' class='status-not-evacuated' " . ($status == 'Not Evacuated' ? 'selected' : '') . ">Not Evacuated</option>
-                                        <option value='Needs Assistance' class='status-needs-assistance' " . ($status == 'Needs Assistance' ? 'selected' : '') . ">Needs Assistance</option>
-                                    ";
-
-                                    // Determine text class based on status
-                                    $status_class = '';
-                                    if ($status == 'Evacuated') {
-                                        $status_class = 'status-evacuated';
-                                    } elseif ($status == 'Not Evacuated') {
-                                        $status_class = 'status-not-evacuated';
-                                    } elseif ($status == 'Needs Assistance') {
-                                        $status_class = 'status-needs-assistance';
-                                    }
+                                    $num_evacuated = $row['num_evacuated'];
+                                    $num_not_evacuated = $row['num_not_evacuated'];
+                                    $num_needs_assistance = $row['num_needs_assistance'];
 
                                     echo '<tr>
                                         <th scope="row">' . $family_id . '</th>
@@ -161,23 +112,19 @@ if (array_key_exists($barangay, $barangay_map)) {
                                         <td>' . $num_pwd . '</td>
                                         <td>' . $evacID . '</td>
                                         <td>
-                                            <select class="form-control" name="evacStatus[' . $family_id . ']">
-                                                ' . $status_options . '
-                                            </select>
+                                            <span class="badge badge-success">Evacuated: ' . $num_evacuated . '</span><br>
+                                            <span class="badge badge-danger">Not Evacuated: ' . $num_not_evacuated . '</span><br>
+                                            <span class="badge badge-warning">Needs Assistance: ' . $num_needs_assistance . '</span>
                                         </td>
-                                        <td class="' . $status_class . '">' . $status . '</td>
                                         <td>
                                             <button class="btn btn-success">
                                                 <a href="viewFamily.php?family_id=' . $family_id . '" class="text-light">VIEW</a>
                                             </button>
                                         </td>
-                                        <td>
-                                            <button class="btn btn-warning" type="submit" name="update_status">Update Status</button>
-                                        </td>
                                     </tr>';
                                 }
                             } else {
-                                echo "<tr><td colspan='10' class='text-center'>No records found</td></tr>";
+                                echo "<tr><td colspan='7' class='text-center'>No records found</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -186,9 +133,5 @@ if (array_key_exists($barangay, $barangay_map)) {
             </div>
         </div>
     </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
-
 </body>
 </html>
