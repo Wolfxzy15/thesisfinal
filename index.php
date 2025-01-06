@@ -113,18 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg">
-    <a class="navbar-brand" href="login.php">
-      <img src="images/citylogo.png" width="40" height="40" class="d-inline-block align-top" alt="">
-      Barangay
-    </a>
-    <div class="ml-2">
-      <a class="nav-link" style="color:aliceblue" href="visitMap.php">
-        <i class="fa-solid fa-map pr-2"></i>Evac Map
-        <span class="sr-only">(current)</span>
-      </a>
-    </div>
-  </nav>
+  
   <div class="container mt-5 pt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">

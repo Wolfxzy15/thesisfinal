@@ -52,7 +52,8 @@ if ($result && mysqli_num_rows($result) > 0) {
         <a class="navbar-brand ml-2" href="#">
             <img src="images/citylogo.png" width="40" height="40" class="d-inline-block align-center" alt="">
         </a>
-        <h1 style="margin-left: 0;"><?php echo $usernames?></h1>
+        <h1 style="margin-left: 0;"><?php echo strtoupper($usernames); ?></h1>
+
         <a class="nav-link ml-auto" style="color:aliceblue" href="logout.php"><i class="fa-solid fa-sign-out pr-2"></i>Logout <span class="sr-only">(current)</span></a>
     </header>
 
@@ -62,14 +63,15 @@ if ($result && mysqli_num_rows($result) > 0) {
             <li><a class="nav-link" href="evacMap.php"><i class="fa-solid fa-map pr-2"></i>Evac Map<span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="RESIDENTREGISTER.php"><i class="fa-solid fa-user-plus pr-2"></i>Add Residents <span class="sr-only">(current)</span></a></li>
                 <li><a class="nav-link" href="displayFamilies.php"><i class="fa-solid fa-people-roof pr-2"></i>Families<span class="sr-only">(current)</span></a></li>
-                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i>Edit Residents<span class="sr-only">(current)</span></a></li>
+                <li><a class="nav-link" href="displayResidents.php"><i class="fa-solid fa-edit pr-2"></i>Residents<span class="sr-only">(current)</span></a></li>
                 
                 <?php if ($userType === 'admin'): ?>
-                    <li><a class="nav-link" href="registerEvac.php"><i class="fa-solid fa-building pr-2"></i>Add new Evac Site<span class="sr-only">(current)</span></a></li>
+                    <li><a class="nav-link" href="registerEvac.php"><i class="fa-solid fa-building pr-2"></i>Add New Evac Site<span class="sr-only">(current)</span></a></li>
+                    <li><a class="nav-link" href="evacuation.php"><i class="fa-solid fa-house pr-2"></i>Evacuation<span class="sr-only">(current)</span></a></li>
                 <?php endif; ?>
 
                 
-                <li><a class="nav-link" href="evacuation.php"><i class="fa-solid fa-house pr-2"></i>Evacuation<span class="sr-only">(current)</span></a></li>
+                
             </ul>
         </nav>
     </aside>
