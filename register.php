@@ -73,20 +73,24 @@
             <form autocomplete="off" action="" method="post">
               <input type="hidden" id="action" value="register">
               <div class="form-group">
-                <label for="firstName">Firstname</label>
-                <input type="firstName" class="form-control" id="firstName" placeholder="Enter your Firstname" name="firstName" required>
+                <label for="firstName">First Name</label>
+                <input type="firstName" class="form-control" id="firstName" placeholder="Enter your First Name" name="firstName" required>
               </div>
               <div class="form-group">
-                <label for="lastName">Lastname</label>
-                <input type="lastName" class="form-control" id="lastName" placeholder="Enter your Lastname" name="lastName" required>
+                <label for="lastName">Last Name</label>
+                <input type="lastName" class="form-control" id="lastName" placeholder="Enter your Last Name" name="lastName" required>
+              </div>
+              <div class="form-group">
+                <label for="username">Email Address</label>
+                <input type="text" class="form-control" id="emailAdd" placeholder="Email Address" name="emailAdd" required>
               </div>
               <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" placeholder="Register Username" name="username" required>
+                <input type="text" class="form-control" id="username" placeholder="Username" name="username" required>
               </div>
               <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Register Password" name="password" required>
+                <input type="password" class="form-control" id="password" placeholder="Password" name="password" required>
               </div>
               <div class="form-group">
                 <label for="cpassword">Confirm Password</label>
